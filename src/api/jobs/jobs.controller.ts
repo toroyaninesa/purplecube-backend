@@ -5,7 +5,6 @@ import {
   Delete,
   Get,
   Param,
-  Patch,
   Post,
   Query,
   UseGuards,
@@ -13,7 +12,6 @@ import {
   Headers,
 } from '@nestjs/common';
 import { JobsService } from './jobs.service';
-import { UpdateJobDto } from './dto/update-job.dto';
 import { Job } from './entities/job.entity';
 import { JwtAuthGuard } from '../user/auth/auth.guard';
 import { Roles } from '../user/auth/role/role.decorator';
@@ -57,10 +55,11 @@ export class JobsController {
   @UseGuards(RolesGuard)
   @Get('applications/:id')
   doApplicationStatusScreening(@Headers() headers, @Param('id') id: number) {
-    return this.jobsService.doApplicationStatusScreening(headers.authorization, id);
+    return this.jobsService.doApplicationStatusScreening(
+      headers.authorization,
+      id,
+    );
   }
-
-
 
   @Roles(ERole.Company)
   @UseGuards(RolesGuard)
@@ -72,10 +71,9 @@ export class JobsController {
   @Roles(ERole.Company)
   @UseGuards(RolesGuard)
   @Get(':id/applicants')
-  getPositionApplicants(@Headers() headers,@Param('id') id: number) {
+  getPositionApplicants(@Headers() headers, @Param('id') id: number) {
     return this.jobsService.getJobApplicants(headers.authorization, id);
   }
-
 
   @Get('?')
   findAll(

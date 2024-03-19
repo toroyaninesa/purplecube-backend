@@ -1,17 +1,16 @@
 import {
-  BadRequestException, ClassSerializerInterceptor,
+  ClassSerializerInterceptor,
   HttpException,
   HttpStatus,
   Injectable,
   UnauthorizedException,
-  UseInterceptors
-} from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
-import { User } from "../models /user.entity";
-import { JwtService } from "@nestjs/jwt";
+  UseInterceptors,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from '../models /user.entity';
+import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
-import { UserService } from "../user.service";
 
 @Injectable()
 @UseInterceptors(ClassSerializerInterceptor)
@@ -78,5 +77,4 @@ export class AuthHelper {
 
     return true;
   }
-
 }

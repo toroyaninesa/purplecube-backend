@@ -1,7 +1,13 @@
-import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { User } from "../../user/models /user.entity";
-import { Job } from "../../jobs/entities/job.entity";
-import { EStatus } from "./status.enum";
+import {
+  BaseEntity,
+  Column,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { User } from '../../user/models /user.entity';
+import { Job } from '../../jobs/entities/job.entity';
+import { EStatus } from './status.enum';
 
 @Entity()
 export class Application extends BaseEntity {

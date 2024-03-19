@@ -1,15 +1,23 @@
-import { BadRequestException, HttpException, Injectable, UnauthorizedException } from "@nestjs/common";
-import { Job } from "./entities/job.entity";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
-import { UserService } from "../user/user.service";
-import { User } from "../user/models /user.entity";
-import { AuthHelper } from "../user/auth/auth.helper";
-import { Application } from "../applications/entities/application.entity";
-import { ApplicationsService } from "../applications/applications.service";
-import { EmploymentLevelEnum, EmploymentTypeEnum } from "./entities/search.enum";
-import { Category } from "./entities/category.entity";
-import { EStatus } from "../applications/entities/status.enum";
+import {
+  BadRequestException,
+  HttpException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { Job } from './entities/job.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { UserService } from '../user/user.service';
+import { User } from '../user/models /user.entity';
+import { AuthHelper } from '../user/auth/auth.helper';
+import { Application } from '../applications/entities/application.entity';
+import { ApplicationsService } from '../applications/applications.service';
+import {
+  EmploymentLevelEnum,
+  EmploymentTypeEnum,
+} from './entities/search.enum';
+import { Category } from './entities/category.entity';
+import { EStatus } from '../applications/entities/status.enum';
 
 @Injectable()
 export class JobsService {
@@ -24,17 +32,16 @@ export class JobsService {
     private userService: UserService,
     private auth: AuthHelper,
     private app: ApplicationsService,
-  ) {
-  }
+  ) {}
 
   public async create(token: string, job: Job, categories: number[]) {
     const decodedUser: { id: number } = await this.auth.decode(
-      token.split(" ")[1]
+      token.split(' ')[1],
     );
     const user: User = await this.userService.findUserById(decodedUser.id);
     const data = {
       ...job,
-      company: { id: user.companyId }
+      company: { id: user.companyId },
     };
     if (!categories) {
       return this.jobRepository.save(data);
@@ -58,7 +65,7 @@ export class JobsService {
   }
 
   getAllCategories() {
-    return this.catRepository.createQueryBuilder("category").getMany();
+    return this.catRepository.createQueryBuilder('category').getMany();
   }
 
   async findAll(
@@ -67,28 +74,28 @@ export class JobsService {
     employment?: EmploymentTypeEnum[],
     level?: EmploymentLevelEnum[],
     cat?: string[],
-    title?: string
+    title?: string,
   ) {
     const query = this.jobRepository
-      .createQueryBuilder("job")
-      .leftJoinAndSelect("job.company", "company")
-      .orderBy("job.created_at", "DESC")
-      .leftJoinAndSelect("job.categories", "category")
+      .createQueryBuilder('job')
+      .leftJoinAndSelect('job.company', 'company')
+      .orderBy('job.created_at', 'DESC')
+      .leftJoinAndSelect('job.categories', 'category')
       .skip(skip)
       .take(limit);
     if (employment) {
-      query.andWhere("job.employment IN (:...employment)", { employment });
+      query.andWhere('job.employment IN (:...employment)', { employment });
     }
     if (level) {
-      query.andWhere("job.level IN (:...level)", { level });
+      query.andWhere('job.level IN (:...level)', { level });
     }
     if (title) {
-      query.andWhere("LOWER(job.title) like LOWER(:title)", {
-        title: "%" + title + "%"
+      query.andWhere('LOWER(job.title) like LOWER(:title)', {
+        title: '%' + title + '%',
       });
     }
     if (cat) {
-      query.andWhere("category.title IN (:...cat)", { cat });
+      query.andWhere('category.title IN (:...cat)', { cat });
     }
     const count = await query.getCount();
 
@@ -98,7 +105,7 @@ export class JobsService {
   findJobById(id: number): Promise<Job | undefined> {
     return this.jobRepository.findOne({
       where: { id },
-      relations: { company: true, categories: true }
+      relations: { company: true, categories: true },
     });
   }
 
@@ -107,7 +114,7 @@ export class JobsService {
   }
 
   async saveJobToUser(id: number, userId: number, token: string) {
-    const decodedUser: User = await this.auth.decode(token.split(" ")[1]);
+    const decodedUser: User = await this.auth.decode(token.split(' ')[1]);
     const user: User = await this.userService.findUserById(userId);
     if (user && user.id === decodedUser.id) {
       const job = await this.findJobById(id);
@@ -119,20 +126,20 @@ export class JobsService {
         return this.userService.update(user);
       }
       throw new HttpException(
-        "The job does not exist or it is already saved",
-        400
+        'The job does not exist or it is already saved',
+        400,
       );
     }
-    throw new HttpException("You are not authorized to do this action", 401);
+    throw new HttpException('You are not authorized to do this action', 401);
   }
 
   async applyToJob(token: string, jobId: number) {
     const job = await this.findJobById(jobId);
     if (job && job.no_applicants < job.max_applications) {
-      const user: { id: number } = await this.auth.decode(token.split(" ")[1]);
+      const user: { id: number } = await this.auth.decode(token.split(' ')[1]);
       const application = {
         user,
-        job: { id: jobId }
+        job: { id: jobId },
       };
       job.no_applicants += 1;
       const apps = await this.app.getApplications(token);
@@ -140,17 +147,17 @@ export class JobsService {
         await this.jobRepository.save(job);
         return this.app.save(application);
       }
-      throw new BadRequestException("You have already saved this job");
+      throw new BadRequestException('You have already saved this job');
     }
     throw new BadRequestException("Sorry, you can't apply to this job");
   }
 
   async getCompanyPositions(token: string) {
-    const decodedUser: User = await this.auth.decode(token.split(" ")[1]);
+    const decodedUser: User = await this.auth.decode(token.split(' ')[1]);
     const user: User = await this.userService.findUserById(decodedUser.id);
     return this.jobRepository.find({
       where: { company: { id: user.companyId } },
-      relations: { company: true, applications: true, categories: true }
+      relations: { company: true, applications: true, categories: true },
     });
   }
 
@@ -179,7 +186,7 @@ export class JobsService {
     const user: User = await this.userService.findUserById(decodedUser.id);
     console.log(application);
     console.log(user);
-    if(user.companyId !== application.job.company.id) {
+    if (user.companyId !== application.job.company.id) {
       return new UnauthorizedException();
     }
     return application;
@@ -190,7 +197,7 @@ export class JobsService {
     if (application && application instanceof Application) {
       application.status = EStatus.SCREENING;
       return this.applicationRepository.save(application);
-    };
+    }
     return new UnauthorizedException();
   }
 }
