@@ -1,0 +1,5 @@
+export enum EStatus {
+  SUBMITTED = "SUBMITTED",
+  SCREENING = "SCREENING",
+  DECISION  = "DECISION"
+}
