@@ -1,0 +1,3 @@
+"id","email","password","name","surname","lastLoginAt","role","companyId"
+2,lilit@gmail.com,$2a$10$sHtqW7JyOdaMKe0w4Pty/OSb2AmsX3rih4nVKOqiZBIc5GXE4Xd1G,Lilit,Stepanyan,2024-03-19 19:04:34.286,USER,
+3,anna@gmail.com,$2a$10$n6CkPWZQxEty2flkLeNcRO13JUgkYlh7N3/2.wOD6iFTDaLi5HTgi,Anna,Abrahamyan,2023-07-15 12:15:59.977,COMPANY,2
