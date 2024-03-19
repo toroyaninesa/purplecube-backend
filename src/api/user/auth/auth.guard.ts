@@ -5,7 +5,7 @@ import { Request } from 'express';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') /*implements IAuthGuard*/ {
- /* public handleRequest(err: unknown, user: User): any {
+  public handleRequest(err: unknown, user: User): any {
     return user;
   }
 
@@ -15,5 +15,5 @@ export class JwtAuthGuard extends AuthGuard('jwt') /*implements IAuthGuard*/ {
     const user: Request = context.switchToHttp().getRequest();
 
     return !!user;
-  }*/
+  }
 }

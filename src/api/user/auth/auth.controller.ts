@@ -18,7 +18,7 @@ export class AuthController {
   @Inject(AuthService)
   private readonly service: AuthService;
   @Inject(AuthHelper)
-  private readonly helper: AuthHelper
+  private readonly helper: AuthHelper;
 
 
 
