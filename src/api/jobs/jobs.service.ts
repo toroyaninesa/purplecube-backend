@@ -178,26 +178,30 @@ export class JobsService {
       .leftJoinAndSelect('application.job', 'job')
       .leftJoinAndSelect('job.company', 'company')
       .getOne();
-    console.log(token);
     const decodedUser: { id: number } = await this.auth.decode(
       token.split(' ')[1],
     );
-    console.log(decodedUser);
     const user: User = await this.userService.findUserById(decodedUser.id);
-    console.log(application);
-    console.log(user);
     if (user.companyId !== application.job.company.id) {
       return new UnauthorizedException();
     }
     return application;
   }
 
-  async doApplicationStatusScreening(token: string, id: number) {
-    const application = await this.getApplicationById(token, id);
-    if (application && application instanceof Application) {
-      application.status = EStatus.SCREENING;
-      return this.applicationRepository.save(application);
-    }
-    return new UnauthorizedException();
+  async moveApplicationStatus(token: string, id: number, status: EStatus) {
+    await this.applicationRepository
+      .createQueryBuilder('application')
+      .where('application.id =(:id)', { id })
+      .update<Application>(Application, { status })
+      .updateEntity(true)
+      .execute();
+    return await this.getSingleApplicationById(id);
+  }
+
+  private async getSingleApplicationById(id: number) {
+    return await this.applicationRepository
+      .createQueryBuilder('application')
+      .where('application.id =(:id)', { id })
+      .getOne();
   }
 }

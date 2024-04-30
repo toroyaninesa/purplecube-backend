@@ -21,6 +21,7 @@ import {
   EmploymentLevelEnum,
   EmploymentTypeEnum,
 } from './entities/search.enum';
+import { EStatus } from '../applications/entities/status.enum';
 
 @Controller('jobs')
 @UseGuards(JwtAuthGuard)
@@ -53,11 +54,16 @@ export class JobsController {
 
   @Roles(ERole.Company)
   @UseGuards(RolesGuard)
-  @Get('applications/:id')
-  doApplicationStatusScreening(@Headers() headers, @Param('id') id: number) {
-    return this.jobsService.doApplicationStatusScreening(
+  @Post('applications/:id')
+  doApplicationStatusScreening(
+    @Headers() headers,
+    @Param('id') id: number,
+    @Body() request: { status: EStatus },
+  ) {
+    return this.jobsService.moveApplicationStatus(
       headers.authorization,
       id,
+      request.status,
     );
   }
 
