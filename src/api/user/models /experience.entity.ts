@@ -1,5 +1,11 @@
-import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { User } from "./user.entity";
+import {
+  BaseEntity,
+  Column,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { User } from './user.entity';
 
 @Entity()
 export class Experience extends BaseEntity {
@@ -17,7 +23,6 @@ export class Experience extends BaseEntity {
 
   @Column({ type: 'timestamp', nullable: true, default: null })
   public startDate: Date | null;
-
 
   @Column({ type: 'timestamp', nullable: true, default: null })
   public endDate: Date | null;

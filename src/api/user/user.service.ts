@@ -22,7 +22,7 @@ export class UserService {
   findUserById(id: number) {
     return this.userRepository.findOne({
       where: { id },
-      relations: { saved_jobs: true, applications: true, experience: true },
+      relations: { saved_jobs: true, applications: true },
     });
   }
 
@@ -43,8 +43,7 @@ export class UserService {
 
     return this.experienceRepository
       .createQueryBuilder('experience')
-      .where('experience.user = :user', { user })
-      .orderBy('experience.created_at', 'DESC')
+      .where('experience.userId = :id', { id: user.id })
       .getMany();
   }
 
@@ -62,7 +61,9 @@ export class UserService {
   }
 
   async deleteExperienceById(id: number) {
-    const experienceToDelete = await this.experienceRepository.findOne({ where: { id: id } });
+    const experienceToDelete = await this.experienceRepository.findOne({
+      where: { id: id },
+    });
 
     if (experienceToDelete) {
       await this.experienceRepository.remove(experienceToDelete);

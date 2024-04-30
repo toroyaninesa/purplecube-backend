@@ -2,6 +2,7 @@ import {
   Body,
   ClassSerializerInterceptor,
   Controller,
+  Delete,
   Get,
   Headers,
   Param,
@@ -35,10 +36,6 @@ export class UserController {
     return this.userService.findSavedJobs(headers.authorization);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: number) {
-    return this.userService.findUserById(+id);
-  }
   @Get('experience')
   allExperience(@Headers() headers) {
     if (!headers.authorization) {
@@ -47,10 +44,15 @@ export class UserController {
     return this.userService.getAllExperience(headers.authorization);
   }
   @Post('experience')
-  experienceList(@Body() list: Experience[],@Headers() headers) {
+  experienceList(@Body() list: Experience[], @Headers() headers) {
     if (!headers.authorization) {
       throw new UnauthorizedException();
     }
     return this.userService.addExperienceList(list, headers.authorization);
+  }
+
+  @Delete('experience/:id')
+  deleteExperienceById(@Param('id') id: number) {
+    return this.userService.deleteExperienceById(id);
   }
 }
