@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { HttpModule, Module } from '@nestjs/common';
 import { ApplicationsService } from './applications.service';
 import { ApplicationsController } from './applications.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -9,6 +9,6 @@ import { AuthModule } from '../user/auth/auth.module';
   controllers: [ApplicationsController],
   providers: [ApplicationsService],
   exports: [ApplicationsService],
-  imports: [TypeOrmModule.forFeature([Application]), AuthModule],
+  imports: [TypeOrmModule.forFeature([Application]), AuthModule, HttpModule],
 })
 export class ApplicationsModule {}

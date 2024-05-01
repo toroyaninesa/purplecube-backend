@@ -24,12 +24,31 @@ export class AuthHelper {
     this.jwt = jwt;
   }
 
-  // Decoding the JWT Token
+  public async validate(token: string): Promise<boolean | never> {
+    let decoded: unknown;
+    try {
+      decoded = this.jwt.verify(token);
+    } catch (error) {
+      throw new UnauthorizedException(error);
+    }
+
+    if (!decoded) {
+      throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
+    }
+
+    const user: User = await this.validateUser(decoded);
+
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
+    return true;
+  }
+
   public async decode(token: string): Promise<any> {
     return this.jwt.decode(token);
   }
 
-  // Get User by User ID we get from decode()
   public async validateUser(decoded: any): Promise<User> {
     return this.repository.findOne({
       where: { id: decoded.id },
@@ -43,38 +62,18 @@ export class AuthHelper {
     });
   }
 
-  // Generate JWT Token
   public generateToken(user: User): string {
-    const payload = { id: user.id };
+    const payload = { id: user.id, role: user.role };
     return this.jwt.sign(payload);
   }
 
-  // Validate User's password
   public isPasswordValid(password: string, userPassword: string): boolean {
     return bcrypt.compareSync(password, userPassword);
   }
 
-  // Encode User's password
   public encodePassword(password: string): string {
     const salt: string = bcrypt.genSaltSync(10);
 
     return bcrypt.hashSync(password, salt);
-  }
-
-  // Validate JWT Token, throw forbidden error if JWT Token is invalid
-  private async validate(token: string): Promise<boolean | never> {
-    const decoded: unknown = this.jwt.verify(token);
-
-    if (!decoded) {
-      throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
-    }
-
-    const user: User = await this.validateUser(decoded);
-
-    if (!user) {
-      throw new UnauthorizedException();
-    }
-
-    return true;
   }
 }

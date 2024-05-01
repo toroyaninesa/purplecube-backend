@@ -2,6 +2,7 @@ import {
   BadRequestException,
   HttpException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Job } from './entities/job.entity';
@@ -9,7 +10,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserService } from '../user/user.service';
 import { User } from '../user/models /user.entity';
-import { AuthHelper } from '../user/auth/auth.helper';
 import { Application } from '../applications/entities/application.entity';
 import { ApplicationsService } from '../applications/applications.service';
 import {
@@ -30,15 +30,11 @@ export class JobsService {
 
   constructor(
     private userService: UserService,
-    private auth: AuthHelper,
     private app: ApplicationsService,
   ) {}
 
-  public async create(token: string, job: Job, categories: number[]) {
-    const decodedUser: { id: number } = await this.auth.decode(
-      token.split(' ')[1],
-    );
-    const user: User = await this.userService.findUserById(decodedUser.id);
+  public async create(userId: number, job: Job, categories: number[]) {
+    const user: User = await this.userService.findUserById(userId);
     const data = {
       ...job,
       company: { id: user.companyId },
@@ -109,14 +105,12 @@ export class JobsService {
     });
   }
 
-  remove(id: number) {
-    return this.jobRepository.delete(id);
-  }
-
-  async saveJobToUser(id: number, userId: number, token: string) {
-    const decodedUser: User = await this.auth.decode(token.split(' ')[1]);
+  async saveJobToUser(id: number, userId: number, currentUserId: number) {
+    const currentUser: User = await this.userService.findUserById(
+      currentUserId,
+    );
     const user: User = await this.userService.findUserById(userId);
-    if (user && user.id === decodedUser.id) {
+    if (user && user.id === currentUser.id) {
       const job = await this.findJobById(id);
       if (
         job &&
@@ -133,16 +127,15 @@ export class JobsService {
     throw new HttpException('You are not authorized to do this action', 401);
   }
 
-  async applyToJob(token: string, jobId: number) {
+  async applyToJob(userId: number, jobId: number) {
     const job = await this.findJobById(jobId);
     if (job && job.no_applicants < job.max_applications) {
-      const user: { id: number } = await this.auth.decode(token.split(' ')[1]);
       const application = {
-        user,
+        id: userId,
         job: { id: jobId },
       };
       job.no_applicants += 1;
-      const apps = await this.app.getApplications(token);
+      const apps = await this.app.getApplications(userId);
       if (apps.filter((app) => app.job.id === jobId).length < 1) {
         await this.jobRepository.save(job);
         return this.app.save(application);
@@ -152,24 +145,23 @@ export class JobsService {
     throw new BadRequestException("Sorry, you can't apply to this job");
   }
 
-  async getCompanyPositions(token: string) {
-    const decodedUser: User = await this.auth.decode(token.split(' ')[1]);
-    const user: User = await this.userService.findUserById(decodedUser.id);
+  async getCompanyPositions(userId: number) {
+    const user: User = await this.userService.findUserById(userId);
     return this.jobRepository.find({
       where: { company: { id: user.companyId } },
       relations: { company: true, applications: true, categories: true },
     });
   }
 
-  async getJobApplicants(token: string, id: number) {
-    const jobs = await this.getCompanyPositions(token);
+  async getJobApplicants(userId: number, id: number) {
+    const jobs = await this.getCompanyPositions(userId);
     if (jobs.filter((job) => job.id == id).length < 1) {
-      return new UnauthorizedException();
+      throw new UnauthorizedException();
     }
     return this.app.getJobApplications(id);
   }
 
-  async getApplicationById(token: string, id: number) {
+  async getApplicationById(userId: number, id: number) {
     const application: Application = await this.applicationRepository
       .createQueryBuilder('application')
       .where('application.id =(:id)', { id })
@@ -178,26 +170,44 @@ export class JobsService {
       .leftJoinAndSelect('application.job', 'job')
       .leftJoinAndSelect('job.company', 'company')
       .getOne();
-    console.log(token);
-    const decodedUser: { id: number } = await this.auth.decode(
-      token.split(' ')[1],
-    );
-    console.log(decodedUser);
-    const user: User = await this.userService.findUserById(decodedUser.id);
-    console.log(application);
-    console.log(user);
+
+    if (!application)
+      throw new NotFoundException({
+        message: 'No matched applications found!',
+      });
+    const user: User = await this.userService.findUserById(userId);
     if (user.companyId !== application.job.company.id) {
       return new UnauthorizedException();
     }
     return application;
   }
 
-  async doApplicationStatusScreening(token: string, id: number) {
-    const application = await this.getApplicationById(token, id);
-    if (application && application instanceof Application) {
-      application.status = EStatus.SCREENING;
-      return this.applicationRepository.save(application);
-    }
-    return new UnauthorizedException();
+  async moveApplicationStatus(id: number, status: EStatus) {
+    if (!this.isApplicationStatusValid(status))
+      throw new BadRequestException({
+        message: `Status ${status} is not valid`,
+      });
+    await this.applicationRepository
+      .createQueryBuilder('application')
+      .where('application.id =(:id)', { id })
+      .update<Application>(Application, { status })
+      .updateEntity(true)
+      .execute();
+    return await this.getSingleApplicationById(id);
+  }
+
+  private async getSingleApplicationById(id: number) {
+    return await this.applicationRepository
+      .createQueryBuilder('application')
+      .where('application.id =(:id)', { id })
+      .getOne();
+  }
+
+  private isApplicationStatusValid(status: string) {
+    return (
+      status === EStatus.DECISION ||
+      status === EStatus.SUBMITTED ||
+      status === EStatus.SCREENING
+    );
   }
 }

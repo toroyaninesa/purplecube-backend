@@ -11,17 +11,12 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { ApplicationsService } from '../applications/applications.service';
-import { Application } from '../applications/entities/application.entity';
 import { Experience } from './models /experience.entity';
 
 @Controller('user')
 @UseInterceptors(ClassSerializerInterceptor)
 export class UserController {
-  constructor(
-    private readonly userService: UserService,
-    private readonly applicationService: ApplicationsService,
-  ) {}
+  constructor(private readonly userService: UserService) {}
 
   @Get('current')
   async getByToken(@Headers() headers) {

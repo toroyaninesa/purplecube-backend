@@ -1,23 +1,21 @@
-import { Injectable } from '@nestjs/common';
+import { HttpService, Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Application } from './entities/application.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { AuthHelper } from '../user/auth/auth.helper';
 
 @Injectable()
 export class ApplicationsService {
   @InjectRepository(Application)
   readonly applicationRepository: Repository<Application>;
-  constructor(private auth: AuthHelper) {}
+  constructor(private readonly httpService: HttpService) {}
 
   public save(app: any) {
     return this.applicationRepository.save(app);
   }
 
-  async getApplications(token: string) {
-    const user: { id: number } = await this.auth.decode(token.split(' ')[1]);
+  async getApplications(userId: number) {
     return this.applicationRepository.find({
-      where: { user: { id: user.id } },
+      where: { user: { id: userId } },
       relations: { user: true, job: true },
       join: {
         alias: 'application',
@@ -37,5 +35,18 @@ export class ApplicationsService {
       .leftJoinAndSelect('application.user', 'user')
       .where('job.id = (:id)', { id })
       .getMany();
+  }
+
+  async calculateSimilarityScoreForApplicant(body: {
+    resumePrompt: string[];
+    requirementsPrompt: string[];
+  }) {
+    const url = process.env.ML_SCRIPTS_BASE_URL + '/get-similarity-score';
+    try {
+      const response = await this.httpService.post(url, body).toPromise();
+      return response.data;
+    } catch (error) {
+      throw new Error(error);
+    }
   }
 }
