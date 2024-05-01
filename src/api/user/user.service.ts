@@ -1,8 +1,8 @@
-import { ClassSerializerInterceptor, Injectable, UseInterceptors } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { User } from "./models /user.entity";
-import { Repository } from "typeorm";
-import { AuthHelper } from "./auth/auth.helper";
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from './models /user.entity';
+import { Repository } from 'typeorm';
+import { AuthHelper } from './auth/auth.helper';
 
 @Injectable()
 export class UserService {
@@ -30,6 +30,4 @@ export class UserService {
     const user: { id: number } = await this.auth.decode(token.split(' ')[1]);
     return this.findUserById(user.id);
   }
-
-
 }

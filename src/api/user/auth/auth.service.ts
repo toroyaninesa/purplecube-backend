@@ -1,14 +1,18 @@
-import { BadRequestException, Body, HttpException, HttpStatus, Inject, Injectable, Post } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { User } from "../models /user.entity";
-import { Repository } from "typeorm";
-import { AuthHelper } from "./auth.helper";
-import { LoginDto, RegisterDto } from "./auth.dto";
-import { JwtService } from "@nestjs/jwt";
-import { UserService } from "../user.service";
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from '../models /user.entity';
+import { Repository } from 'typeorm';
+import { AuthHelper } from './auth.helper';
+import { LoginDto, RegisterDto } from './auth.dto';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
-
 export class AuthService {
   @InjectRepository(User)
   private readonly repository: Repository<User>;
@@ -18,7 +22,6 @@ export class AuthService {
   constructor(jwt: JwtService) {
     this.jwt = jwt;
   }
-
 
   public async register(body: RegisterDto): Promise<User | never> {
     const { name, email, password }: RegisterDto = body;
@@ -38,7 +41,10 @@ export class AuthService {
 
   public async login(body: LoginDto): Promise<{ user: User; token: string }> {
     const { email, password }: LoginDto = body;
-    const user: User = await this.repository.findOne({ where: { email }, relations: {saved_jobs: true} });
+    const user: User = await this.repository.findOne({
+      where: { email },
+      relations: { saved_jobs: true },
+    });
 
     if (!user) {
       throw new HttpException('No user found', HttpStatus.NOT_FOUND);
@@ -57,7 +63,7 @@ export class AuthService {
 
     return {
       token: this.helper.generateToken(user),
-      user
+      user,
     };
   }
 
@@ -78,11 +84,10 @@ export class AuthService {
     return this.generateResponseWithToken(user);
   }
 
-
   private generateResponseWithToken(user: User) {
     return {
-      token : this.jwt.sign({ id: user.id}),
-       user
+      token: this.jwt.sign({ id: user.id }),
+      user,
     };
   }
 }
