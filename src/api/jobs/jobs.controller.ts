@@ -2,14 +2,13 @@ import {
   Body,
   ClassSerializerInterceptor,
   Controller,
-  Delete,
   Get,
   Param,
   Post,
   Query,
   UseGuards,
   UseInterceptors,
-  Headers,
+  Req,
 } from '@nestjs/common';
 import { JobsService } from './jobs.service';
 import { Job } from './entities/job.entity';
@@ -32,12 +31,8 @@ export class JobsController {
   @Roles(ERole.Admin, ERole.Company)
   @UseGuards(RolesGuard)
   @Post()
-  create(@Headers() headers, @Body() data: { job: Job; categories: number[] }) {
-    return this.jobsService.create(
-      headers.authorization,
-      data.job,
-      data.categories,
-    );
+  create(@Req() request, @Body() data: { job: Job; categories: number[] }) {
+    return this.jobsService.create(request.id, data.job, data.categories);
   }
 
   @Get('categories')
@@ -45,40 +40,35 @@ export class JobsController {
     return this.jobsService.getAllCategories();
   }
 
-  @Roles(ERole.Company)
+  @Roles(ERole.Company, ERole.User)
   @UseGuards(RolesGuard)
   @Get('applications/:id')
-  findApplicationById(@Headers() headers, @Param('id') id: number) {
-    return this.jobsService.getApplicationById(headers.authorization, id);
+  findApplicationById(@Req() request, @Param('id') id: number) {
+    return this.jobsService.getApplicationById(request.id, id);
   }
 
   @Roles(ERole.Company)
   @UseGuards(RolesGuard)
   @Post('applications/:id')
   doApplicationStatusScreening(
-    @Headers() headers,
     @Param('id') id: number,
-    @Body() request: { status: EStatus },
+    @Body() body: { status: EStatus },
   ) {
-    return this.jobsService.moveApplicationStatus(
-      headers.authorization,
-      id,
-      request.status,
-    );
+    return this.jobsService.moveApplicationStatus(id, body.status);
   }
 
   @Roles(ERole.Company)
   @UseGuards(RolesGuard)
   @Get('my')
-  getCompanyPositions(@Headers() headers) {
-    return this.jobsService.getCompanyPositions(headers.authorization);
+  getCompanyPositions(@Req() request) {
+    return this.jobsService.getCompanyPositions(request.id);
   }
 
   @Roles(ERole.Company)
   @UseGuards(RolesGuard)
   @Get(':id/applicants')
-  getPositionApplicants(@Headers() headers, @Param('id') id: number) {
-    return this.jobsService.getJobApplicants(headers.authorization, id);
+  getPositionApplicants(@Req() request, @Param('id') id: number) {
+    return this.jobsService.getJobApplicants(request.id, id);
   }
 
   @Get('?')
@@ -93,29 +83,17 @@ export class JobsController {
     return this.jobsService.findAll(limit, skip, employment, level, cat, title);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.jobsService.findJobById(+id);
-  }
-
-  @Roles(ERole.Admin)
-  @UseGuards(RolesGuard)
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.jobsService.remove(+id);
-  }
-
   @Post('save/:id')
   saveJob(
-    @Headers() headers,
+    @Req() request,
     @Param('id') id: number,
     @Body() body: { id: number },
   ) {
-    return this.jobsService.saveJobToUser(id, body.id, headers.authorization);
+    return this.jobsService.saveJobToUser(id, body.id, request.id);
   }
 
   @Post('apply/:id')
-  applyToJob(@Headers() headers, @Param('id') id: string) {
-    return this.jobsService.applyToJob(headers.authorization, +id);
+  applyToJob(@Req() request, @Param('id') id: string) {
+    return this.jobsService.applyToJob(request.id, +id);
   }
 }
