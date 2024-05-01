@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpService, Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Application } from './entities/application.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -7,6 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 export class ApplicationsService {
   @InjectRepository(Application)
   readonly applicationRepository: Repository<Application>;
+  constructor(private readonly httpService: HttpService) {}
 
   public save(app: any) {
     return this.applicationRepository.save(app);
@@ -34,5 +35,18 @@ export class ApplicationsService {
       .leftJoinAndSelect('application.user', 'user')
       .where('job.id = (:id)', { id })
       .getMany();
+  }
+
+  async calculateSimilarityScoreForApplicant(body: {
+    resumePrompt: string[];
+    requirementsPrompt: string[];
+  }) {
+    const url = process.env.ML_SCRIPTS_BASE_URL + '/get-similarity-score';
+    try {
+      const response = await this.httpService.post(url, body).toPromise();
+      return response.data;
+    } catch (error) {
+      throw new Error(error);
+    }
   }
 }

@@ -5,6 +5,8 @@ import {
   ClassSerializerInterceptor,
   Req,
   UseGuards,
+  Post,
+  Body,
 } from '@nestjs/common';
 import { ApplicationsService } from './applications.service';
 import { JwtAuthGuard } from '../user/auth/auth.guard';
@@ -18,5 +20,13 @@ export class ApplicationsController {
   @Get()
   findUserApplications(@Req() request) {
     return this.applicationsService.getApplications(request.id);
+  }
+
+  @Post('similarity-score')
+  calculateApplicantSimilarityScore(
+    @Req() request,
+    @Body() body: { resumePrompt: string[]; requirementsPrompt: string[] },
+  ) {
+    return this.applicationsService.calculateSimilarityScoreForApplicant(body);
   }
 }
