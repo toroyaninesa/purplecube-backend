@@ -86,7 +86,7 @@ export class AuthService {
 
   private generateResponseWithToken(user: User) {
     return {
-      token: this.jwt.sign({ id: user.id }),
+      token: this.jwt.sign({ id: user.id, role: user.role }),
       user,
     };
   }

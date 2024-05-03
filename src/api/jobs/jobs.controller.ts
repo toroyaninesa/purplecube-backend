@@ -6,9 +6,9 @@ import {
   Param,
   Post,
   Query,
+  Req,
   UseGuards,
   UseInterceptors,
-  Req,
 } from '@nestjs/common';
 import { JobsService } from './jobs.service';
 import { Job } from './entities/job.entity';
@@ -47,7 +47,7 @@ export class JobsController {
     return this.jobsService.getApplicationById(request.id, id);
   }
 
-  @Roles(ERole.Company)
+  @Roles(ERole.Company, ERole.Admin)
   @UseGuards(RolesGuard)
   @Post('applications/:id')
   doApplicationStatusScreening(
@@ -57,7 +57,7 @@ export class JobsController {
     return this.jobsService.moveApplicationStatus(id, body.status);
   }
 
-  @Roles(ERole.Company)
+  @Roles(ERole.Company, ERole.Admin)
   @UseGuards(RolesGuard)
   @Get('my')
   getCompanyPositions(@Req() request) {
@@ -90,6 +90,11 @@ export class JobsController {
     @Body() body: { id: number },
   ) {
     return this.jobsService.saveJobToUser(id, body.id, request.id);
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.jobsService.findJobById(+id);
   }
 
   @Post('apply/:id')
