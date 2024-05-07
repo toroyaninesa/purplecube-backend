@@ -51,9 +51,9 @@ export class JobsController {
   @Post('applications/:id')
   doApplicationStatusScreening(
     @Param('id') id: number,
-    @Body() body: { stageId: number },
+    @Body() body: { stageId: number; message?: string },
   ) {
-    return this.jobsService.moveApplicationStatus(id, body.stageId);
+    return this.jobsService.moveApplicationStatus(id, body.stageId, body.message);
   }
 
   @Roles(ERole.Company, ERole.Admin)

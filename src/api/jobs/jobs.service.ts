@@ -18,6 +18,7 @@ import {
 } from './entities/search.enum';
 import { Category } from './entities/category.entity';
 import { EStatus } from '../applications/entities/status.enum';
+import {JobStages} from "./entities/job-stages.entity";
 
 @Injectable()
 export class JobsService {
@@ -180,40 +181,38 @@ export class JobsService {
     if (user.companyId !== application.job.company.id) {
       return new UnauthorizedException();
     }
-    application.job.jobStages.sort((a,b) => {
-      if (a.orderNumber < b.orderNumber) {
-        return -1;
-      }
-      if (a.orderNumber > b.orderNumber) {
-        return 1;
-      }
-      return 0;
-    });
+    this.sortApplicationStages(application);
     return application;
   }
 
-  async moveApplicationStatus(id: number, stageId: number) {
+  async moveApplicationStatus(id: number, stageId: number, message?: string) {
     await this.applicationRepository
       .createQueryBuilder('application')
       .where('application.id =(:id)', { id })
-      .update<Application>(Application, { currentStageId: stageId })
+      .update<Application>(Application, { currentStageId: stageId, finalStageMessage: message })
       .updateEntity(true)
       .execute();
     return await this.getSingleApplicationById(id);
   }
 
   private async getSingleApplicationById(id: number) {
-    return await this.applicationRepository
+    const application = await this.applicationRepository
       .createQueryBuilder('application')
       .where('application.id =(:id)', { id })
       .getOne();
+    this.sortApplicationStages(application);
+    return application;
   }
 
-  private isApplicationStatusValid(status: string) {
-    return (
-      status === EStatus.DECISION ||
-      status === EStatus.SUBMITTED ||
-      status === EStatus.SCREENING
-    );
-  }
+ private sortApplicationStages(application) {
+   application.job.jobStages.sort((a,b) => {
+     if (a.orderNumber < b.orderNumber) {
+       return -1;
+     }
+     if (a.orderNumber > b.orderNumber) {
+       return 1;
+     }
+     return 0;
+   });
+ }
 }

@@ -14,7 +14,7 @@ export class ApplicationsService {
   }
 
   async getApplications(userId: number) {
-    return this.applicationRepository.find({
+    const application = await this.applicationRepository.find({
       where: { user: { id: userId } },
       relations: { user: true, job: true },
       join: {
@@ -26,6 +26,8 @@ export class ApplicationsService {
         },
       },
     });
+    this.sortApplication(application);
+    return application;
   }
 
   getJobApplications(id: number) {
@@ -49,5 +51,19 @@ export class ApplicationsService {
     } catch (error) {
       throw new Error(error);
     }
+  }
+
+  private sortApplication(applications) {
+    applications.forEach((application) => {
+      application.job.jobStages.sort((a,b) => {
+        if (a.orderNumber < b.orderNumber) {
+          return -1;
+        }
+        if (a.orderNumber > b.orderNumber) {
+          return 1;
+        }
+        return 0;
+      });
+    });
   }
 }

@@ -16,6 +16,9 @@ export class Application extends BaseEntity {
   @Column()
   currentStageId: number;
 
+  @Column({ nullable: true })
+  finalStageMessage: string;
+
   @ManyToOne(() => User, (user) => user.applications)
   user: User;
 
