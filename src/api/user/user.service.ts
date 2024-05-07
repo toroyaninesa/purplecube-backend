@@ -78,7 +78,6 @@ export class UserService {
     if (!_user) {
       return;
     }
-    const newUser = Object.assign({}, _user, user);
-    return this.update(newUser);
+    return this.userRepository.merge(_user, { ...user });
   }
 }
