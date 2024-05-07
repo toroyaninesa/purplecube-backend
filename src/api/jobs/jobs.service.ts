@@ -192,18 +192,14 @@ export class JobsService {
     return application;
   }
 
-  async moveApplicationStatus(id: number, status: EStatus) {
-   /* if (!this.isApplicationStatusValid(status))
-      throw new BadRequestException({
-        message: `Status ${status} is not valid`,
-      });
+  async moveApplicationStatus(id: number, stageId: number) {
     await this.applicationRepository
       .createQueryBuilder('application')
       .where('application.id =(:id)', { id })
-      .update<Application>(Application, { currentStageId })
+      .update<Application>(Application, { currentStageId: stageId })
       .updateEntity(true)
       .execute();
-    return await this.getSingleApplicationById(id);*/
+    return await this.getSingleApplicationById(id);
   }
 
   private async getSingleApplicationById(id: number) {
