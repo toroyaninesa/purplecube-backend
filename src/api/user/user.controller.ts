@@ -7,11 +7,13 @@ import {
   Headers,
   Param,
   Post,
+  Put,
   UnauthorizedException,
   UseInterceptors,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { Experience } from './models /experience.entity';
+import { User } from './models /user.entity';
 
 @Controller('user')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -38,6 +40,7 @@ export class UserController {
     }
     return this.userService.getAllExperience(headers.authorization);
   }
+
   @Post('experience')
   experienceList(@Body() list: Experience[], @Headers() headers) {
     if (!headers.authorization) {
@@ -49,5 +52,13 @@ export class UserController {
   @Delete('experience/:id')
   deleteExperienceById(@Param('id') id: number) {
     return this.userService.deleteExperienceById(id);
+  }
+
+  @Put('')
+  updateUser(@Headers() headers, @Body() user: User) {
+    if (!headers.authorization) {
+      throw new UnauthorizedException();
+    }
+    return this.userService.updateUser(headers.authorization, user);
   }
 }

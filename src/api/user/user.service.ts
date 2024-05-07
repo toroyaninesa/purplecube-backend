@@ -72,4 +72,13 @@ export class UserService {
       return false; // Indicate that no experience was found with the given ID
     }
   }
+
+  async updateUser(token: string, user: User) {
+    const _user = await this.getUserByToken(token);
+    if (!_user) {
+      return;
+    }
+    const newUser = Object.assign({}, _user, user);
+    return this.update(newUser);
+  }
 }
