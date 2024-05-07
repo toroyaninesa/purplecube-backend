@@ -18,6 +18,9 @@ export class JobStages extends BaseEntity {
   @Column({ nullable: false })
   stagePrefix: string;
 
+  @Column({ nullable: true })
+  stageMessage: string;
+
   @Column({ nullable: false })
   orderNumber: number;
 

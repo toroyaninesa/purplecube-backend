@@ -21,6 +21,7 @@ export class ApplicationsService {
         alias: 'application',
         leftJoinAndSelect: {
           job: 'application.job',
+          jobStages: 'job.jobStages',
           company: 'job.company',
         },
       },
