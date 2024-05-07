@@ -13,6 +13,7 @@ import { Application } from "../../applications/entities/application.entity";
 import { application } from "express";
 import { EmploymentLevelEnum, EmploymentTypeEnum } from "./search.enum";
 import { Category } from "./category.entity";
+import {JobStages} from "./job-stages.entity";
 
 @Entity()
 export class Job extends BaseEntity {
@@ -58,9 +59,15 @@ export class Job extends BaseEntity {
   categories: Category[];
 
   @OneToMany(() => Application, (application) => application.job, {
-    nullable: true,
+    nullable: true
   })
   applications: Application[];
+
+  @OneToMany(() => JobStages, (jobStages) => jobStages.job, {
+    nullable: false
+  })
+
+  jobStages: JobStages[];
 
   @CreateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)" })
   public created_at: Date;

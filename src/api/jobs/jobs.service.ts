@@ -168,6 +168,7 @@ export class JobsService {
       .leftJoinAndSelect('application.user', 'user')
       .leftJoinAndSelect('user.experience', 'experience')
       .leftJoinAndSelect('application.job', 'job')
+      .leftJoinAndSelect('job.jobStages', 'jobStages')
       .leftJoinAndSelect('job.company', 'company')
       .getOne();
 
@@ -179,21 +180,30 @@ export class JobsService {
     if (user.companyId !== application.job.company.id) {
       return new UnauthorizedException();
     }
+    application.job.jobStages.sort((a,b) => {
+      if (a.orderNumber < b.orderNumber) {
+        return -1;
+      }
+      if (a.orderNumber > b.orderNumber) {
+        return 1;
+      }
+      return 0;
+    });
     return application;
   }
 
   async moveApplicationStatus(id: number, status: EStatus) {
-    if (!this.isApplicationStatusValid(status))
+   /* if (!this.isApplicationStatusValid(status))
       throw new BadRequestException({
         message: `Status ${status} is not valid`,
       });
     await this.applicationRepository
       .createQueryBuilder('application')
       .where('application.id =(:id)', { id })
-      .update<Application>(Application, { status })
+      .update<Application>(Application, { currentStageId })
       .updateEntity(true)
       .execute();
-    return await this.getSingleApplicationById(id);
+    return await this.getSingleApplicationById(id);*/
   }
 
   private async getSingleApplicationById(id: number) {
