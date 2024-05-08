@@ -78,6 +78,7 @@ export class UserService {
     if (!_user) {
       return;
     }
-    return this.userRepository.merge(_user, { ...user });
+    this.userRepository.merge(_user, { ...user });
+    return this.userRepository.save(_user);
   }
 }
