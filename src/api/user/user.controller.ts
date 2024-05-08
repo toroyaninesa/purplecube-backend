@@ -8,13 +8,15 @@ import {
   Param,
   Post,
   Put,
-  UnauthorizedException,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { Experience } from './models /experience.entity';
+import { JwtAuthGuard } from './auth/auth.guard';
 import { User } from './models /user.entity';
 
+@UseGuards(JwtAuthGuard)
 @Controller('user')
 @UseInterceptors(ClassSerializerInterceptor)
 export class UserController {
@@ -22,9 +24,6 @@ export class UserController {
 
   @Get('current')
   async getByToken(@Headers() headers) {
-    if (!headers.authorization) {
-      throw new UnauthorizedException();
-    }
     return this.userService.getUserByToken(headers.authorization);
   }
 
@@ -35,17 +34,11 @@ export class UserController {
 
   @Get('experience')
   allExperience(@Headers() headers) {
-    if (!headers.authorization) {
-      throw new UnauthorizedException();
-    }
     return this.userService.getAllExperience(headers.authorization);
   }
 
   @Post('experience')
   experienceList(@Body() list: Experience[], @Headers() headers) {
-    if (!headers.authorization) {
-      throw new UnauthorizedException();
-    }
     return this.userService.addExperienceList(list, headers.authorization);
   }
 
@@ -56,9 +49,6 @@ export class UserController {
 
   @Put('')
   updateUser(@Headers() headers, @Body() user: User) {
-    if (!headers.authorization) {
-      throw new UnauthorizedException();
-    }
     return this.userService.updateUser(headers.authorization, user);
   }
 }
