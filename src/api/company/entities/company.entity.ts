@@ -13,6 +13,9 @@ export class Company {
   public name: string;
 
   @Column({ type: 'varchar', nullable: true })
+  public description: string;
+
+  @Column({ type: 'varchar', nullable: true })
   public image_url: string;
 
   @OneToMany(() => Job, (job: Job) => job.company)
