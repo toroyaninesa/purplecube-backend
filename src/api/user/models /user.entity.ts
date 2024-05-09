@@ -3,14 +3,15 @@ import {
   Column,
   Entity,
   JoinTable,
-  ManyToMany, OneToMany,
-  PrimaryGeneratedColumn
-} from "typeorm";
+  ManyToMany,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { Exclude } from 'class-transformer';
 import ERole from '../auth/role/role.enum';
 import { Job } from '../../jobs/entities/job.entity';
-import { Application } from "../../applications/entities/application.entity";
-import { Experience } from "./experience.entity";
+import { Application } from '../../applications/entities/application.entity';
+import { Experience } from './experience.entity';
 
 @Entity()
 export class User extends BaseEntity {
@@ -43,7 +44,7 @@ export class User extends BaseEntity {
   @Column({ type: 'timestamp', nullable: true, default: null })
   public lastLoginAt: Date | null;
 
-  @ManyToMany(() => Job, { cascade: true , createForeignKeyConstraints: true})
+  @ManyToMany(() => Job, { cascade: true, createForeignKeyConstraints: true })
   @JoinTable({
     name: 'user_saved_jobs',
     joinColumn: { name: 'user_id', referencedColumnName: 'id' },
