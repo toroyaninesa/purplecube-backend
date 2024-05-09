@@ -197,9 +197,14 @@ export class JobsService {
 
   private async getSingleApplicationById(id: number) {
     const application = await this.applicationRepository
-      .createQueryBuilder('application')
-      .where('application.id =(:id)', { id })
-      .getOne();
+        .createQueryBuilder('application')
+        .where('application.id =(:id)', { id })
+        .leftJoinAndSelect('application.user', 'user')
+        .leftJoinAndSelect('user.experience', 'experience')
+        .leftJoinAndSelect('application.job', 'job')
+        .leftJoinAndSelect('job.jobStages', 'jobStages')
+        .leftJoinAndSelect('job.company', 'company')
+        .getOne();
     this.sortApplicationStages(application);
     return application;
   }
