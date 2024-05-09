@@ -4,4 +4,4 @@ enum ERole {
   Company = 'COMPANY',
 }
 
-export default ERole
+export default ERole;

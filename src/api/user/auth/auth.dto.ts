@@ -1,6 +1,12 @@
-import { Trim } from "class-sanitizer";
-import { IsEmail, IsOptional, IsString, MinLength } from "class-validator";
-import ERole from "./role/role.enum";
+import { Trim } from 'class-sanitizer';
+import {
+  IsEmail,
+  IsEnum,
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator';
+import ERole from './role/role.enum';
 
 export class RegisterDto {
   @Trim()
@@ -11,10 +17,12 @@ export class RegisterDto {
   @MinLength(8)
   public readonly password: string;
 
+  @IsEnum(ERole)
+  public readonly role: ERole;
+
   @IsString()
   @IsOptional()
   public readonly name?: string;
-
 }
 
 export class LoginDto {
