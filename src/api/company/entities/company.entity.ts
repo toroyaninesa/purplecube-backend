@@ -6,6 +6,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Job } from '../../jobs/entities/job.entity';
+import { User } from '../../user/models /user.entity';
 
 @Entity()
 export class Company {
@@ -32,4 +33,7 @@ export class Company {
 
   @OneToMany(() => Job, (job: Job) => job.company)
   public jobs: Job[];
+
+  @OneToMany(() => User, (user) => user.company)
+  users: User;
 }

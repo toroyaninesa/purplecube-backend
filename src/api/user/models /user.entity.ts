@@ -3,14 +3,17 @@ import {
   Column,
   Entity,
   JoinTable,
-  ManyToMany, OneToMany,
-  PrimaryGeneratedColumn
-} from "typeorm";
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { Exclude } from 'class-transformer';
 import ERole from '../auth/role/role.enum';
 import { Job } from '../../jobs/entities/job.entity';
-import { Application } from "../../applications/entities/application.entity";
-import { Experience } from "./experience.entity";
+import { Application } from '../../applications/entities/application.entity';
+import { Experience } from './experience.entity';
+import { Company } from '../../company/entities/company.entity';
 
 @Entity()
 export class User extends BaseEntity {
@@ -30,8 +33,11 @@ export class User extends BaseEntity {
   @Column({ type: 'varchar', nullable: true })
   public surname: string | null;
 
-  @Column({ type: 'int', nullable: true })
-  public companyId: number | null;
+  @ManyToOne(() => Company, (company: Company) => company.users, {
+    cascade: true,
+    createForeignKeyConstraints: true,
+  })
+  public company: Company | null;
 
   @Column({
     type: 'enum',
@@ -43,7 +49,7 @@ export class User extends BaseEntity {
   @Column({ type: 'timestamp', nullable: true, default: null })
   public lastLoginAt: Date | null;
 
-  @ManyToMany(() => Job, { cascade: true , createForeignKeyConstraints: true})
+  @ManyToMany(() => Job, { cascade: true, createForeignKeyConstraints: true })
   @JoinTable({
     name: 'user_saved_jobs',
     joinColumn: { name: 'user_id', referencedColumnName: 'id' },
