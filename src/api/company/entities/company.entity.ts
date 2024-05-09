@@ -1,4 +1,10 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { Job } from '../../jobs/entities/job.entity';
 
 @Entity()
@@ -17,6 +23,12 @@ export class Company {
 
   @Column({ type: 'varchar', nullable: true })
   public image_url: string;
+
+  @CreateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP(6)',
+  })
+  public created_at: Date;
 
   @OneToMany(() => Job, (job: Job) => job.company)
   public jobs: Job[];
