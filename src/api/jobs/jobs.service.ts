@@ -17,8 +17,6 @@ import {
   EmploymentTypeEnum,
 } from './entities/search.enum';
 import { Category } from './entities/category.entity';
-import { EStatus } from '../applications/entities/status.enum';
-import {JobStages} from "./entities/job-stages.entity";
 
 @Injectable()
 export class JobsService {
@@ -38,7 +36,7 @@ export class JobsService {
     const user: User = await this.userService.findUserById(userId);
     const data = {
       ...job,
-      company: { id: user.companyId },
+      company: { id: user.company.id },
     };
     if (!categories) {
       return this.jobRepository.save(data);
@@ -149,7 +147,7 @@ export class JobsService {
   async getCompanyPositions(userId: number) {
     const user: User = await this.userService.findUserById(userId);
     return this.jobRepository.find({
-      where: { company: { id: user.companyId } },
+      where: { company: { id: user.company.id } },
       relations: { company: true, applications: true, categories: true },
     });
   }
@@ -178,7 +176,7 @@ export class JobsService {
         message: 'No matched applications found!',
       });
     const user: User = await this.userService.findUserById(userId);
-    if (user.companyId !== application.job.company.id) {
+    if (user.company.id !== application.job.company.id) {
       return new UnauthorizedException();
     }
     this.sortApplicationStages(application);

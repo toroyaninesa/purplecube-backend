@@ -22,7 +22,7 @@ export class UserService {
   findUserById(id: number) {
     return this.userRepository.findOne({
       where: { id },
-      relations: { saved_jobs: true, applications: true },
+      relations: { saved_jobs: true, applications: true, company: true },
     });
   }
 

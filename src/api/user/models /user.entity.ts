@@ -4,6 +4,7 @@ import {
   Entity,
   JoinTable,
   ManyToMany,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -12,6 +13,7 @@ import ERole from '../auth/role/role.enum';
 import { Job } from '../../jobs/entities/job.entity';
 import { Application } from '../../applications/entities/application.entity';
 import { Experience } from './experience.entity';
+import { Company } from '../../company/entities/company.entity';
 
 @Entity()
 export class User extends BaseEntity {
@@ -31,8 +33,11 @@ export class User extends BaseEntity {
   @Column({ type: 'varchar', nullable: true })
   public surname: string | null;
 
-  @Column({ type: 'int', nullable: true })
-  public companyId: number | null;
+  @ManyToOne(() => Company, (company: Company) => company.users, {
+    cascade: true,
+    createForeignKeyConstraints: true,
+  })
+  public company: Company | null;
 
   @Column({
     type: 'enum',

@@ -1,5 +1,12 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { Job } from '../../jobs/entities/job.entity';
+import { User } from '../../user/models /user.entity';
 
 @Entity()
 export class Company {
@@ -13,8 +20,20 @@ export class Company {
   public name: string;
 
   @Column({ type: 'varchar', nullable: true })
+  public description: string;
+
+  @Column({ type: 'varchar', nullable: true })
   public image_url: string;
+
+  @CreateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP(6)',
+  })
+  public created_at: Date;
 
   @OneToMany(() => Job, (job: Job) => job.company)
   public jobs: Job[];
+
+  @OneToMany(() => User, (user) => user.company)
+  users: User;
 }
