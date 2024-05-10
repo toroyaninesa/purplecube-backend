@@ -23,8 +23,8 @@ export class AuthService {
     this.jwt = jwt;
   }
 
-  public async register(body: RegisterDto): Promise<User | never> {
-    const { name, email, password }: RegisterDto = body;
+  public async register(body: RegisterDto): Promise<User> {
+    const { name, surname, email, password, role }: RegisterDto = body;
     let user: User = await this.repository.findOne({ where: { email } });
 
     if (user) {
@@ -33,8 +33,10 @@ export class AuthService {
     user = new User();
 
     user.name = name;
+    user.surname = surname;
     user.email = email;
     user.password = this.helper.encodePassword(password);
+    user.role = role;
 
     return this.repository.save(user);
   }
