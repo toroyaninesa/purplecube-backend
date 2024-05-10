@@ -10,6 +10,7 @@ import {
   UseInterceptors,
   ClassSerializerInterceptor,
   UseGuards,
+  Headers,
 } from '@nestjs/common';
 import { CompanyService } from './company.service';
 import { CreateCompanyDto } from './dto/create-company.dto';
@@ -28,8 +29,8 @@ export class CompanyController {
   @Roles(ERole.Admin, ERole.Company)
   @UseGuards(RolesGuard)
   @Post()
-  create(@Body() createCompanyDto: CreateCompanyDto) {
-    return this.companyService.create(createCompanyDto);
+  create(@Body() createCompanyDto: CreateCompanyDto, @Headers() headers) {
+    return this.companyService.create(createCompanyDto, headers);
   }
 
   @Get()

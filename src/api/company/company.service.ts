@@ -4,14 +4,26 @@ import { UpdateCompanyDto } from './dto/update-company.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Company } from './entities/company.entity';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class CompanyService {
   @InjectRepository(Company)
   readonly companyRepository: Repository<Company>;
 
-  create(createCompanyDto: CreateCompanyDto) {
-    return this.companyRepository.save(createCompanyDto);
+  constructor(private userService: UserService) {}
+
+  async create(createCompanyDto: CreateCompanyDto, headers) {
+    const user = await this.userService.getUserByToken(headers.token);
+    if (user.company) {
+      return;
+    }
+    const company: Company = await this.companyRepository.save(
+      createCompanyDto,
+    );
+    user.company = company;
+    await this.userService.updateUser(headers.token, user);
+    return company;
   }
 
   async findAll(limit: number, skip: number) {
