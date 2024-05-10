@@ -5,12 +5,12 @@ import {
   Controller,
   Inject,
   Post,
-  UseInterceptors
-} from "@nestjs/common";
-import { AuthService } from "./auth.service";
-import { LoginDto, RegisterDto } from "./auth.dto";
-import { User } from "../models /user.entity";
-import { AuthHelper } from "./auth.helper";
+  UseInterceptors,
+} from '@nestjs/common';
+import { AuthService } from './auth.service';
+import { LoginDto, RegisterDto } from './auth.dto';
+import { User } from '../models /user.entity';
+import { AuthHelper } from './auth.helper';
 
 @Controller('auth')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -20,13 +20,10 @@ export class AuthController {
   @Inject(AuthHelper)
   private readonly helper: AuthHelper;
 
-
-
   @Post('register')
   private register(@Body() body: RegisterDto): Promise<User | never> {
     return this.service.register(body);
   }
-
 
   @Post('login')
   private login(@Body() body: LoginDto): Promise<{ token: string }> {
@@ -40,5 +37,4 @@ export class AuthController {
     }
     return this.service.refreshAccessToken(accessToken);
   }
-
 }
