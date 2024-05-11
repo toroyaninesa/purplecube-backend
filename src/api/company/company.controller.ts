@@ -3,7 +3,6 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
   Query,
@@ -11,6 +10,7 @@ import {
   ClassSerializerInterceptor,
   UseGuards,
   Headers,
+  Put,
 } from '@nestjs/common';
 import { CompanyService } from './company.service';
 import { CreateCompanyDto } from './dto/create-company.dto';
@@ -30,7 +30,7 @@ export class CompanyController {
   @UseGuards(RolesGuard)
   @Post()
   create(@Body() createCompanyDto: CreateCompanyDto, @Headers() headers) {
-    return this.companyService.create(createCompanyDto, headers);
+    return this.companyService.create(createCompanyDto, headers.authorization);
   }
 
   @Get()
@@ -45,9 +45,17 @@ export class CompanyController {
 
   @Roles(ERole.Admin, ERole.Company)
   @UseGuards(RolesGuard)
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCompanyDto: UpdateCompanyDto) {
-    return this.companyService.update(+id, updateCompanyDto);
+  @Put(':id')
+  update(
+    @Param('id') id: number,
+    @Body() updateCompanyDto: UpdateCompanyDto,
+    @Headers() headers,
+  ) {
+    return this.companyService.update(
+      id,
+      updateCompanyDto,
+      headers.authorization,
+    );
   }
 
   @Roles(ERole.Admin, ERole.Company)

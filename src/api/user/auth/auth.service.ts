@@ -45,7 +45,7 @@ export class AuthService {
     const { email, password }: LoginDto = body;
     const user: User = await this.repository.findOne({
       where: { email },
-      relations: { saved_jobs: true },
+      relations: { saved_jobs: true, applications: true, company: true },
     });
 
     if (!user) {
