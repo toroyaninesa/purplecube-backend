@@ -52,13 +52,7 @@ export class AuthHelper {
   public async validateUser(decoded: any): Promise<User> {
     return this.repository.findOne({
       where: { id: decoded.id },
-      join: {
-        alias: 'user',
-        leftJoinAndSelect: {
-          saved_jobs: 'user.saved_jobs',
-          company: 'saved_jobs.company',
-        },
-      },
+      relations: { saved_jobs: true, applications: true, company: true },
     });
   }
 
