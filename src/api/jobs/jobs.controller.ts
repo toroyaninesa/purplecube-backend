@@ -20,6 +20,7 @@ import {
   EmploymentLevelEnum,
   EmploymentTypeEnum,
 } from './entities/search.enum';
+import { JobStages } from './entities/job-stages.entity';
 
 @Controller('jobs')
 @UseGuards(JwtAuthGuard)
@@ -30,8 +31,16 @@ export class JobsController {
   @Roles(ERole.Admin, ERole.Company)
   @UseGuards(RolesGuard)
   @Post()
-  create(@Req() request, @Body() data: { job: Job; categories: number[] }) {
-    return this.jobsService.create(request.id, data.job, data.categories);
+  create(
+    @Req() request,
+    @Body() data: { job: Job; categories: number[]; jobStages: JobStages[] },
+  ) {
+    return this.jobsService.create(
+      request.id,
+      data.job,
+      data.categories,
+      data.jobStages,
+    );
   }
 
   @Get('categories')
@@ -53,7 +62,11 @@ export class JobsController {
     @Param('id') id: number,
     @Body() body: { stageId: number; message?: string },
   ) {
-    return this.jobsService.moveApplicationStatus(id, body.stageId, body.message);
+    return this.jobsService.moveApplicationStatus(
+      id,
+      body.stageId,
+      body.message,
+    );
   }
 
   @Roles(ERole.Company, ERole.Admin)

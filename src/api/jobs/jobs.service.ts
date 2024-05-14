@@ -17,6 +17,7 @@ import {
   EmploymentTypeEnum,
 } from './entities/search.enum';
 import { Category } from './entities/category.entity';
+import { JobStages } from './entities/job-stages.entity';
 
 @Injectable()
 export class JobsService {
@@ -26,33 +27,49 @@ export class JobsService {
   private readonly catRepository: Repository<Category>;
   @InjectRepository(Application)
   readonly applicationRepository: Repository<Application>;
+  @InjectRepository(JobStages)
+  readonly jobStagesRepository: Repository<JobStages>;
 
   constructor(
     private userService: UserService,
     private app: ApplicationsService,
   ) {}
 
-  public async create(userId: number, job: Job, categories: number[]) {
+  public async create(
+    userId: number,
+    job: Job,
+    categories: number[],
+    jobStages: JobStages[],
+  ) {
     const user: User = await this.userService.findUserById(userId);
     const data = {
       ...job,
       company: { id: user.company.id },
+      jobStages: jobStages,
     };
-    if (!categories) {
-      return this.jobRepository.save(data);
-    }
+
+    const newJob: Job = await this.jobRepository.save(data);
 
     if (categories) {
-      await this.jobRepository.save(data);
-      const newjob: Job = await this.findJobById(data.id);
+      const cats: Category[] = [];
       for (const cat of categories) {
         const foundCat = await this.findCategoryById(cat);
         if (foundCat) {
-          newjob.categories.push(foundCat);
+          cats.push(foundCat);
         }
       }
-      return this.jobRepository.save(newjob);
+      if (cats.length > 0) {
+        newJob.categories = cats;
+        await this.jobRepository.save(newJob);
+      }
     }
+    if (jobStages) {
+      for (const stage of jobStages) {
+        await this.jobStagesRepository.save({ ...stage, job: newJob });
+      }
+    }
+
+    return newJob;
   }
 
   findCategoryById(id: number) {
@@ -187,7 +204,10 @@ export class JobsService {
     await this.applicationRepository
       .createQueryBuilder('application')
       .where('application.id =(:id)', { id })
-      .update<Application>(Application, { currentStageId: stageId, finalStageMessage: message })
+      .update<Application>(Application, {
+        currentStageId: stageId,
+        finalStageMessage: message,
+      })
       .updateEntity(true)
       .execute();
     return await this.getSingleApplicationById(id);
@@ -195,27 +215,27 @@ export class JobsService {
 
   private async getSingleApplicationById(id: number) {
     const application = await this.applicationRepository
-        .createQueryBuilder('application')
-        .where('application.id =(:id)', { id })
-        .leftJoinAndSelect('application.user', 'user')
-        .leftJoinAndSelect('user.experience', 'experience')
-        .leftJoinAndSelect('application.job', 'job')
-        .leftJoinAndSelect('job.jobStages', 'jobStages')
-        .leftJoinAndSelect('job.company', 'company')
-        .getOne();
+      .createQueryBuilder('application')
+      .where('application.id =(:id)', { id })
+      .leftJoinAndSelect('application.user', 'user')
+      .leftJoinAndSelect('user.experience', 'experience')
+      .leftJoinAndSelect('application.job', 'job')
+      .leftJoinAndSelect('job.jobStages', 'jobStages')
+      .leftJoinAndSelect('job.company', 'company')
+      .getOne();
     this.sortApplicationStages(application);
     return application;
   }
 
- private sortApplicationStages(application) {
-   application.job.jobStages.sort((a,b) => {
-     if (a.orderNumber < b.orderNumber) {
-       return -1;
-     }
-     if (a.orderNumber > b.orderNumber) {
-       return 1;
-     }
-     return 0;
-   });
- }
+  private sortApplicationStages(application) {
+    application.job.jobStages.sort((a, b) => {
+      if (a.orderNumber < b.orderNumber) {
+        return -1;
+      }
+      if (a.orderNumber > b.orderNumber) {
+        return 1;
+      }
+      return 0;
+    });
+  }
 }
