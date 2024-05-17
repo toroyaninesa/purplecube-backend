@@ -8,12 +8,14 @@ import { UserModule } from '../user/user.module';
 import { ApplicationsModule } from '../applications/applications.module';
 import { Category } from './entities/category.entity';
 import { Application } from '../applications/entities/application.entity';
+import { JobStages } from './entities/job-stages.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Job]),
     TypeOrmModule.forFeature([Category]),
     TypeOrmModule.forFeature([Application]),
+    TypeOrmModule.forFeature([JobStages]),
     UserModule,
     AuthModule,
     ApplicationsModule,
