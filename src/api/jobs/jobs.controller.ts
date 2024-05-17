@@ -3,6 +3,7 @@ import {
   ClassSerializerInterceptor,
   Controller,
   Get,
+  Headers,
   Param,
   Post,
   Query,
@@ -109,8 +110,10 @@ export class JobsController {
     return this.jobsService.findJobById(+id);
   }
 
+  @Roles(ERole.User)
+  @UseGuards(RolesGuard)
   @Post('apply/:id')
-  applyToJob(@Req() request, @Param('id') id: string) {
-    return this.jobsService.applyToJob(request.id, +id);
+  applyToJob(@Param('id') id: string, @Headers() headers) {
+    return this.jobsService.applyToJob(headers.authorization, +id);
   }
 }

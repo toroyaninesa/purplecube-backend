@@ -117,7 +117,7 @@ export class JobsService {
   findJobById(id: number): Promise<Job | undefined> {
     return this.jobRepository.findOne({
       where: { id },
-      relations: { company: true, categories: true },
+      relations: { company: true, categories: true, jobStages: true },
     });
   }
 
@@ -143,15 +143,17 @@ export class JobsService {
     throw new HttpException('You are not authorized to do this action', 401);
   }
 
-  async applyToJob(userId: number, jobId: number) {
+  async applyToJob(token: string, jobId: number) {
+    const user = await this.userService.getUserByToken(token);
     const job = await this.findJobById(jobId);
     if (job && job.no_applicants < job.max_applications) {
       const application = {
-        id: userId,
+        user: { id: user.id },
         job: { id: jobId },
+        currentStageId: job.jobStages[0].id,
       };
       job.no_applicants += 1;
-      const apps = await this.app.getApplications(userId);
+      const apps = await this.app.getApplications(user.id);
       if (apps.filter((app) => app.job.id === jobId).length < 1) {
         await this.jobRepository.save(job);
         return this.app.save(application);
