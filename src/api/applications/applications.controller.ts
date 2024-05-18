@@ -1,12 +1,13 @@
 import {
+  Body,
+  ClassSerializerInterceptor,
   Controller,
   Get,
-  UseInterceptors,
-  ClassSerializerInterceptor,
+  Param,
+  Post,
   Req,
   UseGuards,
-  Post,
-  Body,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ApplicationsService } from './applications.service';
 import { JwtAuthGuard } from '../user/auth/auth.guard';
@@ -22,11 +23,8 @@ export class ApplicationsController {
     return this.applicationsService.getApplications(request.id);
   }
 
-  @Post('similarity-score')
-  calculateApplicantSimilarityScore(
-    @Req() request,
-    @Body() body: { resumePrompt: string[]; requirementsPrompt: string[] },
-  ) {
-    return this.applicationsService.calculateSimilarityScoreForApplicant(body);
+  @Post('similarity-score/')
+  async calculateApplicantSimilarityScore(@Body () body) {
+    return this.applicationsService.calculateMultipleSimilarityScores(body.ids);
   }
 }

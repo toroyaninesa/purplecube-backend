@@ -2,11 +2,16 @@ import { HttpService, Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Application } from './entities/application.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { UserService } from '../user/user.service';
+import { User } from '../user/models /user.entity';
+import { Experience } from '../user/models /experience.entity';
 
 @Injectable()
 export class ApplicationsService {
   @InjectRepository(Application)
   readonly applicationRepository: Repository<Application>;
+  @InjectRepository(Experience)
+  readonly experienceRepository: Repository<Experience>;
   constructor(private readonly httpService: HttpService) {}
 
   public save(app: any) {
@@ -40,10 +45,36 @@ export class ApplicationsService {
       .getMany();
   }
 
-  async calculateSimilarityScoreForApplicant(body: {
-    resumePrompt: string[];
-    requirementsPrompt: string[];
-  }) {
+  async calculateMultipleSimilarityScores(ids: number[]){
+    const similarityScores = {};
+
+    const promises = ids.map(async (id) => {
+      try {
+        const score = await this.calculateSimilarityScoreForApplicant(id);
+        similarityScores[id] = score;
+      } catch (error) {
+        console.error(`Error calculating similarity score for ID ${id}:`, error);
+        similarityScores[id] = null;
+      }
+    });
+
+    await Promise.all(promises);
+
+    return similarityScores;
+  }
+
+  private async calculateSimilarityScoreForApplicant(id: number) {
+    const application = await this.getOneApplication(id);
+    const userId = application.user.id;
+    const experiences = await this.experienceRepository
+      .createQueryBuilder('experience')
+      .where('experience.userId = :id', { id: userId })
+      .getMany();
+    console.log(application);
+    const body = {
+      resumePrompt: experiences.map((exp) => exp.description),
+      requirementsPrompt: [application.job.description],
+    };
     const url = process.env.ML_SCRIPTS_BASE_URL + '/get-similarity-score';
     try {
       const response = await this.httpService.post(url, body).toPromise();
@@ -51,6 +82,13 @@ export class ApplicationsService {
     } catch (error) {
       throw new Error(error);
     }
+  }
+
+  getOneApplication(id: number) {
+    return this.applicationRepository.findOne({
+      where: { id },
+      relations: { job: true, user: true },
+    });
   }
 
   private sortApplication(applications) {

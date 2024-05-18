@@ -15,15 +15,19 @@ export class UserService {
   constructor(private auth: AuthHelper) {}
 
   async findSavedJobs(token: string) {
-    const user = await this.auth.validateUser(token);
+    const user = await this.getUserByToken(token);
     return user.saved_jobs;
   }
 
-  findUserById(id: number) {
-    return this.userRepository.findOne({
-      where: { id },
-      relations: { saved_jobs: true, applications: true, company: true },
-    });
+  findUserById(userId: number) {
+    return this.userRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.saved_jobs', 'saved_jobs')
+      .leftJoinAndSelect('saved_jobs.company', 'saved_job_company')
+      .leftJoinAndSelect('user.applications', 'applications')
+      .leftJoinAndSelect('user.company', 'company')
+      .where('user.id = :userId', { userId })
+      .getOne();
   }
 
   update(user: User) {
