@@ -51,10 +51,6 @@ export class ApplicationsService {
         const score = await this.calculateSimilarityScoreForApplicant(id);
         similarityScores[id] = score;
       } catch (error) {
-        console.error(
-          `Error calculating similarity score for ID ${id}:`,
-          error,
-        );
         similarityScores[id] = null;
       }
     });
