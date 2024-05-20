@@ -2,8 +2,6 @@ import { HttpService, Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Application } from './entities/application.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserService } from '../user/user.service';
-import { User } from '../user/models /user.entity';
 import { Experience } from '../user/models /experience.entity';
 
 @Injectable()
@@ -45,7 +43,7 @@ export class ApplicationsService {
       .getMany();
   }
 
-  async calculateMultipleSimilarityScores(ids: number[]){
+  async calculateMultipleSimilarityScores(ids: number[]) {
     const similarityScores = {};
 
     const promises = ids.map(async (id) => {
@@ -53,7 +51,6 @@ export class ApplicationsService {
         const score = await this.calculateSimilarityScoreForApplicant(id);
         similarityScores[id] = score;
       } catch (error) {
-        console.error(`Error calculating similarity score for ID ${id}:`, error);
         similarityScores[id] = null;
       }
     });
@@ -70,10 +67,13 @@ export class ApplicationsService {
       .createQueryBuilder('experience')
       .where('experience.userId = :id', { id: userId })
       .getMany();
-    console.log(application);
     const body = {
-      resumePrompt: experiences.map((exp) => exp.description),
-      requirementsPrompt: [application.job.description],
+      resumePrompt: [
+        this.getFirst250Words(
+          experiences.map((exp) => exp.description).join(' '),
+        ),
+      ],
+      requirementsPrompt: [this.getFirst250Words(application.job.description)],
     };
     const url = process.env.ML_SCRIPTS_BASE_URL + '/get-similarity-score';
     try {
@@ -82,6 +82,12 @@ export class ApplicationsService {
     } catch (error) {
       throw new Error(error);
     }
+  }
+
+  private getFirst250Words(input: string): string {
+    const words = input.split(/\s+/);
+    const first512Words = words.slice(0, 250);
+    return first512Words.join(' ');
   }
 
   getOneApplication(id: number) {
@@ -93,7 +99,7 @@ export class ApplicationsService {
 
   private sortApplication(applications) {
     applications.forEach((application) => {
-      application.job.jobStages.sort((a,b) => {
+      application.job.jobStages.sort((a, b) => {
         if (a.orderNumber < b.orderNumber) {
           return -1;
         }
