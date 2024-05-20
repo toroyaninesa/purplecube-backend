@@ -70,7 +70,9 @@ export class ApplicationsService {
     const body = {
       resumePrompt: [
         this.getFirst250Words(
-          experiences.map((exp) => exp.description).join(' '),
+          experiences
+            .map((exp) => [exp.positionTitle, exp.description].join(' '))
+            .join(' '),
         ),
       ],
       requirementsPrompt: [this.getFirst250Words(application.job.description)],
