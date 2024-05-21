@@ -1,8 +1,9 @@
-import { HttpService, Injectable } from '@nestjs/common';
+import {HttpService, Injectable, UseGuards} from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Application } from './entities/application.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Experience } from '../user/models /experience.entity';
+import { JwtAuthGuard } from '../user/auth/auth.guard';
 
 @Injectable()
 export class ApplicationsService {
@@ -77,9 +78,11 @@ export class ApplicationsService {
       ],
       requirementsPrompt: [this.getFirst250Words(application.job.description)],
     };
+    console.log(body)
     const url = process.env.ML_SCRIPTS_BASE_URL + '/get-similarity-score';
     try {
       const response = await this.httpService.post(url, body).toPromise();
+      console.log(response.data)
       return response.data;
     } catch (error) {
       throw new Error(error);
